@@ -47,39 +47,73 @@
 /* =====================================================
    DARK THEME
 ===================================================== */
-
 html.dark {
-  --bg: #0d0b12;
-  --bg-secondary: #121019;
 
-  --card: rgba(25, 22, 34, 0.88);
-  --card-solid: #18151f;
+  --bg: #4a2f70;
+  --bg-secondary: #3a2558;
 
-  --text: #f4f1fa;
-  --text-secondary: #aaa4b8;
-  --text-muted: #777184;
+  /* KUTULAR TEK RENK */
+  --card: #34343a;
+  --card-solid: #34343a;
 
-  --border: #2a2635;
-  --border-soft: #24212e;
+  --text: #f7f3fc;
+  --text-secondary: #d4c9df;
+  --text-muted: #aaa0b8;
 
-  --primary: #9b7bea;
-  --primary-light: #b18cf3;
-  --primary-dark: #805fd0;
+  --border: rgba(255, 255, 255, 0.11);
+  --border-soft: rgba(255, 255, 255, 0.08);
 
-  --primary-soft: #251d38;
+  --primary: #c7a8f5;
+  --primary-light: #d7c0fa;
+  --primary-dark: #a983df;
+  --primary-soft: rgba(199, 168, 245, 0.15);
 
-  --input-bg: #17141e;
+  --input-bg: #242429;
 
   --shadow:
-    0 25px 70px rgba(0, 0, 0, 0.45);
+    0 20px 60px rgba(20, 10, 35, 0.30);
 
   --shadow-soft:
-    0 12px 35px rgba(0, 0, 0, 0.32);
+    0 10px 30px rgba(20, 10, 35, 0.22);
 
-  --danger: #f0788c;
-  --success: #5ac493;
+  color: var(--text);
+
+  /* SADECE SAYFA ARKA PLANI GRADIENT */
+  background: linear-gradient(
+    135deg,
+    #7042b8 0%,
+    #633d99 28%,
+    #56367f 52%,
+    #493067 76%,
+    #3d2857 100%
+  );
 }
 
+html.dark body {
+
+  min-height: 100vh;
+
+  /* SADECE SAYFA ARKA PLANI GRADIENT */
+  background: linear-gradient(
+    135deg,
+    #7042b8 0%,
+    #633d99 28%,
+    #56367f 52%,
+    #493067 76%,
+    #3d2857 100%
+  );
+
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  color: var(--text);
+}
+
+html.dark #app {
+  min-height: 100vh;
+  background: transparent;
+}
 /* =====================================================
    RESET
 ===================================================== */
@@ -1912,5 +1946,369 @@ html:not(.dark) .student-app {
     white-space: nowrap;
     padding: 9px 11px;
     font-size: 12px;
+  }
+}
+#study-form #study-note {
+  width: 100%;
+  height: 120px !important;
+  min-height: 120px !important;
+  max-height: 120px !important;
+  resize: none !important;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+/* =====================================================
+   ÇALIŞMA EKLE SAYFASI
+===================================================== */
+
+.student-section:has(#study-form) {
+  max-width: 760px;
+  margin: 20px auto 40px;
+}
+
+/* -----------------------------------------
+   BAŞLIK
+----------------------------------------- */
+
+.student-section:has(#study-form) .student-section-header {
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.student-section:has(#study-form) .student-section-header h2 {
+  margin: 6px 0 5px;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+}
+
+.student-section:has(#study-form) .student-section-header p {
+  margin: 0;
+
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* -----------------------------------------
+   FORM KARTI
+----------------------------------------- */
+
+.study-form {
+  padding: 30px;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+
+  border-radius: 28px;
+
+  box-shadow: var(--shadow-soft);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* -----------------------------------------
+   FORM GRUPLARI
+----------------------------------------- */
+
+.study-form .form-group {
+  margin-bottom: 21px;
+}
+
+.study-form label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin-bottom: 8px;
+
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.study-form label span {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* -----------------------------------------
+   SELECT + INPUT + TEXTAREA
+----------------------------------------- */
+
+.study-form input,
+.study-form select,
+.study-form textarea {
+  width: 100%;
+
+  border: 1.5px solid var(--border);
+  border-radius: 15px;
+
+  background: var(--input-bg);
+  color: var(--text);
+
+  font-family: inherit;
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.study-form input,
+.study-form select {
+  height: 52px;
+  padding: 0 15px;
+}
+
+.study-form textarea {
+  height: 120px !important;
+  min-height: 120px !important;
+  max-height: 120px !important;
+
+  padding: 14px 15px;
+
+  line-height: 1.5;
+
+  resize: none !important;
+
+  overflow-y: auto;
+}
+
+.study-form input::placeholder,
+.study-form textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* -----------------------------------------
+   FOCUS
+----------------------------------------- */
+
+.study-form input:focus,
+.study-form select:focus,
+.study-form textarea:focus {
+  border-color: var(--primary);
+
+  background: var(--card-solid);
+
+  box-shadow:
+    0 0 0 4px rgba(128, 102, 217, 0.10);
+
+  transform: translateY(-1px);
+}
+
+/* -----------------------------------------
+   SELECT OKU
+----------------------------------------- */
+
+.study-form select {
+  cursor: pointer;
+  appearance: auto;
+}
+
+.study-form select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* -----------------------------------------
+   DOĞRU / YANLIŞ / BOŞ
+----------------------------------------- */
+
+.study-number-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 12px;
+
+  margin-top: 4px;
+}
+
+.study-number-grid .form-group {
+  margin-bottom: 0;
+}
+
+.study-number-grid input {
+  text-align: center;
+
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* -----------------------------------------
+   TOPLAM SORU
+----------------------------------------- */
+
+.study-total-box {
+  margin-top: 14px;
+
+  min-height: 62px;
+
+  padding: 13px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border: 1px solid var(--border);
+  border-radius: 16px;
+
+  background: var(--primary-soft);
+}
+
+.study-total-box span {
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.study-total-box strong {
+  min-width: 42px;
+
+  color: var(--primary);
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+
+  text-align: right;
+}
+
+/* -----------------------------------------
+   MESAJ
+----------------------------------------- */
+
+#study-form-message {
+  min-height: 20px;
+
+  margin: 4px 0 14px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* -----------------------------------------
+   KAYDET BUTONU
+----------------------------------------- */
+
+#save-study-button {
+  width: 100%;
+
+  min-height: 54px;
+
+  margin-top: 3px;
+
+  border-radius: 16px;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7658d0,
+      #9a72e6
+    );
+
+  box-shadow:
+    0 10px 24px rgba(126, 91, 205, 0.25);
+}
+
+#save-study-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 14px 30px rgba(126, 91, 205, 0.32);
+}
+
+#save-study-button:active {
+  transform: translateY(0);
+}
+
+/* -----------------------------------------
+   SORU ALANLARI GİZLENİNCE
+----------------------------------------- */
+
+#question-fields {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* -----------------------------------------
+   MOBİL
+----------------------------------------- */
+
+@media (max-width: 650px) {
+
+  .student-section:has(#study-form) {
+    margin-top: 10px;
+  }
+
+  .student-section:has(#study-form)
+    .student-section-header h2 {
+    font-size: 24px;
+  }
+
+  .study-form {
+    padding: 22px 18px;
+
+    border-radius: 23px;
+  }
+
+  .study-form .form-group {
+    margin-bottom: 18px;
+  }
+
+  .study-number-grid {
+    gap: 8px;
+  }
+
+  .study-number-grid input {
+    font-size: 16px;
+  }
+
+  .study-total-box {
+    min-height: 58px;
+  }
+}
+#question-fields {
+  margin-bottom: 28px;
+}
+
+/* -----------------------------------------
+   ÇOK KÜÇÜK EKRAN
+----------------------------------------- */
+
+@media (max-width: 380px) {
+
+  .study-form {
+    padding: 19px 15px;
+  }
+
+  .study-number-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .study-number-grid .form-group {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .study-number-grid label {
+    margin: 0;
   }
 }

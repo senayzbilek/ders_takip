@@ -18,13 +18,9 @@ function initTheme() {
 }
 
 function toggleTheme() {
-  const isDark =
-    document.documentElement.classList.toggle("dark");
+  const isDark = document.documentElement.classList.toggle("dark");
 
-  localStorage.setItem(
-    "dersTakipTheme",
-    isDark ? "dark" : "light"
-  );
+  localStorage.setItem("dersTakipTheme", isDark ? "dark" : "light");
 
   updateThemeButton();
 }
@@ -36,14 +32,11 @@ function updateThemeButton() {
 
   if (!button) return;
 
-  const isDark =
-    document.documentElement.classList.contains("dark");
+  const isDark = document.documentElement.classList.contains("dark");
 
   button.textContent = isDark ? "☀️" : "🌙";
 
-  button.title = isDark
-    ? "Açık temaya geç"
-    : "Koyu temaya geç";
+  button.title = isDark ? "Açık temaya geç" : "Koyu temaya geç";
 }
 
 // ==========================================
@@ -119,22 +112,15 @@ function showLogin() {
     </div>
   `;
 
-  const loginForm =
-    document.querySelector("#login-form");
+  const loginForm = document.querySelector("#login-form");
 
-  const message =
-    document.querySelector("#message");
+  const message = document.querySelector("#message");
 
-  const forgotPassword =
-    document.querySelector("#forgot-password");
+  const forgotPassword = document.querySelector("#forgot-password");
 
-  const themeToggle =
-    document.querySelector("#theme-toggle");
+  const themeToggle = document.querySelector("#theme-toggle");
 
-  themeToggle.addEventListener(
-    "click",
-    toggleTheme
-  );
+  themeToggle.addEventListener("click", toggleTheme);
 
   updateThemeButton();
 
@@ -142,90 +128,70 @@ function showLogin() {
   // GİRİŞ YAP
   // ========================================
 
-  loginForm.addEventListener(
-    "submit",
-    async (event) => {
-      event.preventDefault();
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-      const email = document
-        .querySelector("#email")
-        .value
-        .trim();
+    const email = document.querySelector("#email").value.trim();
 
-      const password =
-        document.querySelector("#password").value;
+    const password = document.querySelector("#password").value;
 
-      message.textContent =
-        "Giriş yapılıyor...";
+    message.textContent = "Giriş yapılıyor...";
 
-      message.className = "info";
+    message.className = "info";
 
-      const { data, error } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      if (error) {
-        message.textContent =
-          "E-posta veya şifre hatalı.";
+    if (error) {
+      console.error(error);
 
-        message.className = "error";
+      message.textContent = "E-posta veya şifre hatalı.";
 
-        return;
-      }
+      message.className = "error";
 
-      await checkUser(data.user.id);
+      return;
     }
-  );
+
+    await checkUser(data.user.id);
+  });
 
   // ========================================
   // ŞİFREMİ UNUTTUM
   // ========================================
 
-  forgotPassword.addEventListener(
-    "click",
-    async () => {
-      const email = document
-        .querySelector("#email")
-        .value
-        .trim();
+  forgotPassword.addEventListener("click", async () => {
+    const email = document.querySelector("#email").value.trim();
 
-      if (!email) {
-        message.textContent =
-          "Önce e-posta adresinizi yazın.";
+    if (!email) {
+      message.textContent = "Önce e-posta adresinizi yazın.";
 
-        message.className = "error";
+      message.className = "error";
 
-        return;
-      }
+      return;
+    }
 
-      const { error } =
-        await supabase.auth.resetPasswordForEmail(
-          email,
-          {
-            redirectTo: window.location.origin + "/?reset=1",
-          }
-        );
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + "/?reset=1",
+    });
 
-        if (error) {
-          console.error("Şifre sıfırlama hatası:", error);
-
-          message.textContent =
-            error.message ||
-            "Şifre sıfırlama bağlantısı gönderilemedi.";
-
-          message.className = "error";
-
-          return;
-        }
+    if (error) {
+      console.error("Şifre sıfırlama hatası:", error);
 
       message.textContent =
-        "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. 📧";
+        error.message || "Şifre sıfırlama bağlantısı gönderilemedi.";
 
-      message.className = "success";
+      message.className = "error";
+
+      return;
     }
-  );
+
+    message.textContent =
+      "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. 📧";
+
+    message.className = "success";
+  });
 }
 
 // ==========================================
@@ -233,38 +199,47 @@ function showLogin() {
 // ==========================================
 
 async function checkUser(userId) {
-
-  const { data: teacher } =
-    await supabase
-      .from("teachers")
-      .select("id, name")
-      .eq("id", userId)
-      .maybeSingle();
+  const { data: teacher } = await supabase
+    .from("teachers")
+    .select("id, name")
+    .eq("id", userId)
+    .maybeSingle();
 
   if (teacher) {
     await showTeacherDashboard(teacher);
     return;
   }
 
-  const { data: student } =
-    await supabase
-      .from("students")
-      .select("id, name, grade")
-      .eq("id", userId)
-      .maybeSingle();
+  const { data: student } = await supabase
+    .from("students")
+    .select("id, name, grade")
+    .eq("id", userId)
+    .maybeSingle();
 
   if (student) {
-    showStudentDashboard(student);
+    await showStudentDashboard(student);
     return;
   }
 
   await supabase.auth.signOut();
 
-  alert(
-    "Bu hesap Ders Takip sistemine tanımlı değil."
-  );
+  alert("Bu hesap Ders Takip sistemine tanımlı değil.");
 
   showLogin();
+}
+
+// ==========================================
+// İSİM BAŞ HARFLERİ
+// ==========================================
+
+function getInitials(name) {
+  const parts = name.trim().split(" ");
+
+  if (parts.length === 1) {
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 // ==========================================
@@ -272,15 +247,9 @@ async function checkUser(userId) {
 // ==========================================
 
 async function showTeacherDashboard(teacher) {
-
-  const {
-    data: students,
-    error,
-  } = await supabase
+  const { data: students, error } = await supabase
     .from("students")
-    .select(
-      "id, name, grade, created_at"
-    )
+    .select("id, name, grade, created_at")
     .order("name");
 
   if (error) {
@@ -299,13 +268,10 @@ async function showTeacherDashboard(teacher) {
     return;
   }
 
-  const studentCount =
-    students?.length || 0;
+  const studentCount = students?.length || 0;
 
   app.innerHTML = `
     <div class="dashboard-page">
-
-      <!-- TEMA -->
 
       <button
         id="theme-toggle"
@@ -314,9 +280,6 @@ async function showTeacherDashboard(teacher) {
       >
         🌙
       </button>
-
-
-      <!-- HEADER -->
 
       <header class="dashboard-header">
 
@@ -346,13 +309,7 @@ async function showTeacherDashboard(teacher) {
 
       </header>
 
-
-      <!-- CONTENT -->
-
       <main class="dashboard-content">
-
-
-        <!-- İSTATİSTİKLER -->
 
         <section class="stats-grid">
 
@@ -375,7 +332,6 @@ async function showTeacherDashboard(teacher) {
             </div>
 
           </div>
-
 
           <div class="stat-card">
 
@@ -401,7 +357,6 @@ async function showTeacherDashboard(teacher) {
 
           </div>
 
-
           <div class="stat-card">
 
             <div class="stat-icon">
@@ -424,9 +379,6 @@ async function showTeacherDashboard(teacher) {
 
         </section>
 
-
-        <!-- ÖĞRENCİ YÖNETİMİ -->
-
         <section class="section-header">
 
           <div>
@@ -441,7 +393,6 @@ async function showTeacherDashboard(teacher) {
 
           </div>
 
-
           <button
             id="add-student-button"
             class="primary-button"
@@ -450,9 +401,6 @@ async function showTeacherDashboard(teacher) {
           </button>
 
         </section>
-
-
-        <!-- ÖĞRENCİLER -->
 
         <section
           class="students-list"
@@ -498,9 +446,7 @@ async function showTeacherDashboard(teacher) {
                       >
 
                         <div class="student-avatar">
-                          ${getInitials(
-                            student.name
-                          )}
+                          ${getInitials(student.name)}
                         </div>
 
                         <div class="student-info">
@@ -521,7 +467,7 @@ async function showTeacherDashboard(teacher) {
 
                       </div>
 
-                    `
+                    `,
                   )
                   .join("")
           }
@@ -533,20 +479,15 @@ async function showTeacherDashboard(teacher) {
     </div>
   `;
 
-
   // ========================================
   // TEMA
   // ========================================
 
   document
     .querySelector("#theme-toggle")
-    .addEventListener(
-      "click",
-      toggleTheme
-    );
+    ?.addEventListener("click", toggleTheme);
 
   updateThemeButton();
-
 
   // ========================================
   // ÇIKIŞ
@@ -554,16 +495,11 @@ async function showTeacherDashboard(teacher) {
 
   document
     .querySelector("#logout-button")
-    .addEventListener(
-      "click",
-      async () => {
+    ?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
 
-        await supabase.auth.signOut();
-
-        showLogin();
-      }
-    );
-
+      showLogin();
+    });
 
   // ========================================
   // ÖĞRENCİ EKLE
@@ -571,65 +507,25 @@ async function showTeacherDashboard(teacher) {
 
   document
     .querySelector("#add-student-button")
-    ?.addEventListener(
-      "click",
-      showAddStudentModal
-    );
+    ?.addEventListener("click", showAddStudentModal);
 
   document
     .querySelector("#empty-add-button")
-    ?.addEventListener(
-      "click",
-      showAddStudentModal
-    );
-
+    ?.addEventListener("click", showAddStudentModal);
 
   // ========================================
   // ÖĞRENCİ KARTLARI
   // ========================================
 
-  document
-    .querySelectorAll(".student-card")
-    .forEach((card) => {
+  document.querySelectorAll(".student-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const studentId = card.dataset.studentId;
 
-      card.addEventListener(
-        "click",
-        () => {
-
-          const studentId =
-            card.dataset.studentId;
-
-          alert(
-            `Öğrenci detayları bir sonraki aşamada açılacak.\nID: ${studentId}`
-          );
-
-        }
+      alert(
+        `Öğrenci detayları bir sonraki aşamada açılacak.\nID: ${studentId}`,
       );
-
     });
-}
-
-// ==========================================
-// İSİM BAŞ HARFLERİ
-// ==========================================
-
-function getInitials(name) {
-
-  const parts =
-    name.trim().split(" ");
-
-  if (parts.length === 1) {
-
-    return parts[0]
-      .substring(0, 2)
-      .toUpperCase();
-
-  }
-
-  return (
-    parts[0][0] +
-    parts[parts.length - 1][0]
-  ).toUpperCase();
+  });
 }
 
 // ==========================================
@@ -637,12 +533,7 @@ function getInitials(name) {
 // ==========================================
 
 function showAddStudentModal() {
-
-  // Daha önce açık modal varsa kaldır
-  document
-    .querySelector("#student-modal")
-    ?.remove();
-
+  document.querySelector("#student-modal")?.remove();
 
   const modal = document.createElement("div");
 
@@ -662,11 +553,9 @@ function showAddStudentModal() {
           ×
         </button>
 
-
         <div class="modal-icon">
           🎓
         </div>
-
 
         <h2>
           Yeni Öğrenci Ekle
@@ -677,11 +566,7 @@ function showAddStudentModal() {
           hesabını oluştur.
         </p>
 
-
         <form id="student-form">
-
-
-          <!-- AD -->
 
           <div class="form-group">
 
@@ -699,9 +584,6 @@ function showAddStudentModal() {
 
           </div>
 
-
-          <!-- EMAIL -->
-
           <div class="form-group">
 
             <label for="student-email">
@@ -718,9 +600,6 @@ function showAddStudentModal() {
 
           </div>
 
-
-          <!-- SINIF -->
-
           <div class="form-group">
 
             <label for="student-grade">
@@ -736,36 +615,30 @@ function showAddStudentModal() {
                 Sınıf seç
               </option>
 
-                <option value="5">
-                  5. Sınıf
-                </option>
+              <option value="5">
+                5. Sınıf
+              </option>
 
-                <option value="6">
-                  6. Sınıf
-                </option>
+              <option value="6">
+                6. Sınıf
+              </option>
 
-                <option value="7">
-                  7. Sınıf
-                </option>
+              <option value="7">
+                7. Sınıf
+              </option>
 
-                <option value="8">
-                  8. Sınıf
-                </option>
+              <option value="8">
+                8. Sınıf
+              </option>
 
             </select>
 
           </div>
 
-
-          <!-- MESAJ -->
-
           <p
             id="student-modal-message"
             class="modal-message"
           ></p>
-
-
-          <!-- BUTONLAR -->
 
           <div class="modal-actions">
 
@@ -787,7 +660,6 @@ function showAddStudentModal() {
 
           </div>
 
-
         </form>
 
       </div>
@@ -796,252 +668,146 @@ function showAddStudentModal() {
 
   `;
 
-
   document.body.appendChild(modal);
 
+  const overlay = document.querySelector(".student-modal-overlay");
 
-  // ========================================
-  // ELEMENTLER
-  // ========================================
+  const closeButton = document.querySelector("#close-student-modal");
 
-  const overlay =
-    document.querySelector(
-      ".student-modal-overlay"
-    );
+  const cancelButton = document.querySelector("#cancel-student-modal");
 
-  const closeButton =
-    document.querySelector(
-      "#close-student-modal"
-    );
+  const form = document.querySelector("#student-form");
+  const correctInput = document.querySelector("#study-correct");
 
-  const cancelButton =
-    document.querySelector(
-      "#cancel-student-modal"
-    );
+  const wrongInput = document.querySelector("#study-wrong");
 
-  const form =
-    document.querySelector(
-      "#student-form"
-    );
+  const blankInput = document.querySelector("#study-blank");
 
-  const message =
-    document.querySelector(
-      "#student-modal-message"
-    );
+  const totalDisplay = document.querySelector("#study-total-display");
 
-  const createButton =
-    document.querySelector(
-      "#create-student-button"
-    );
+  function updateStudyTotal() {
+    const correct = Number(correctInput.value) || 0;
 
+    const wrong = Number(wrongInput.value) || 0;
 
-  // ========================================
-  // MODALI KAPAT
-  // ========================================
+    const blank = Number(blankInput.value) || 0;
+
+    const total = correct + wrong + blank;
+
+    totalDisplay.textContent = total;
+  }
+
+  correctInput.addEventListener("input", updateStudyTotal);
+
+  wrongInput.addEventListener("input", updateStudyTotal);
+
+  blankInput.addEventListener("input", updateStudyTotal);
+
+  updateStudyTotal();
+  const message = document.querySelector("#student-modal-message");
+
+  const createButton = document.querySelector("#create-student-button");
 
   function closeModal() {
     modal.remove();
   }
 
-  closeButton.addEventListener(
-    "click",
-    closeModal
-  );
+  closeButton.addEventListener("click", closeModal);
 
-  cancelButton.addEventListener(
-    "click",
-    closeModal
-  );
+  cancelButton.addEventListener("click", closeModal);
 
-
-  overlay.addEventListener(
-    "click",
-    (event) => {
-
-      if (
-        event.target === overlay
-      ) {
-        closeModal();
-      }
-
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeModal();
     }
-  );
+  });
 
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  // ========================================
-  // ÖĞRENCİ OLUŞTUR
-  // ========================================
+    const name = document.querySelector("#student-name").value.trim();
 
-  form.addEventListener(
-    "submit",
-    async (event) => {
+    const email = document
+      .querySelector("#student-email")
+      .value.trim()
+      .toLowerCase();
 
-      event.preventDefault();
+    const grade = Number(document.querySelector("#student-grade").value);
 
+    if (!name || !email || !grade) {
+      message.textContent = "Lütfen tüm alanları doldur.";
 
-      const name =
-        document
-          .querySelector("#student-name")
-          .value
-          .trim();
+      message.className = "modal-message error";
 
-      const email =
-        document
-          .querySelector("#student-email")
-          .value
-          .trim()
-          .toLowerCase();
+      return;
+    }
 
-      const grade =
-        Number(
-          document
-            .querySelector("#student-grade")
-            .value
-        );
+    createButton.disabled = true;
 
+    createButton.textContent = "Oluşturuluyor...";
 
-      if (!name || !email || !grade) {
+    message.textContent = "Öğrenci hesabı oluşturuluyor...";
 
-        message.textContent =
-          "Lütfen tüm alanları doldur.";
+    message.className = "modal-message info";
 
-        message.className =
-          "modal-message error";
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-        return;
+      if (!session) {
+        throw new Error("Oturum bulunamadı. Lütfen tekrar giriş yapın.");
       }
 
+      const { data, error } = await supabase.functions.invoke(
+        "create-student",
+        {
+          body: {
+            name,
+            email,
+            grade,
+          },
+        },
+      );
 
-      // Butonu kilitle
+      if (error) {
+        console.error("Edge Function Error:", error);
 
-      createButton.disabled = true;
+        throw new Error(error.message || "Öğrenci oluşturulamadı.");
+      }
 
-      createButton.textContent =
-        "Oluşturuluyor...";
+      if (!data?.success) {
+        throw new Error(data?.error || "Öğrenci oluşturulamadı.");
+      }
+
+      message.textContent = "Öğrenci başarıyla oluşturuldu! 🎉";
+
+      message.className = "modal-message success";
+
+      createButton.textContent = "Tamamlandı ✓";
+
+      setTimeout(async () => {
+        closeModal();
+
+        const teacher = await getCurrentTeacher();
+
+        if (teacher) {
+          await showTeacherDashboard(teacher);
+        }
+      }, 1200);
+    } catch (error) {
+      console.error("Öğrenci ekleme hatası:", error);
 
       message.textContent =
-        "Öğrenci hesabı oluşturuluyor...";
+        error.message || "Öğrenci eklenirken bir hata oluştu.";
 
-      message.className =
-        "modal-message info";
+      message.className = "modal-message error";
 
+      createButton.disabled = false;
 
-      try {
-
-        // Güncel oturumu al
-
-        const {
-          data: {
-            session,
-          },
-        } =
-          await supabase.auth.getSession();
-
-
-        if (!session) {
-
-          throw new Error(
-            "Oturum bulunamadı. Lütfen tekrar giriş yapın."
-          );
-
-        }
-
-
-        // Edge Function çağrısı
-
-        const {
-          data,
-          error,
-        } =
-          await supabase.functions.invoke(
-            "create-student",
-            {
-              body: {
-                name,
-                email,
-                grade,
-              },
-            }
-          );
-
-
-        if (error) {
-
-          console.error(
-            "Edge Function Error:",
-            error
-          );
-
-          throw new Error(
-            error.message ||
-            "Öğrenci oluşturulamadı."
-          );
-
-        }
-
-
-        if (!data?.success) {
-
-          throw new Error(
-            data?.error ||
-            "Öğrenci oluşturulamadı."
-          );
-
-        }
-
-
-        // Başarılı
-
-        message.textContent =
-          "Öğrenci başarıyla oluşturuldu! 🎉";
-
-        message.className =
-          "modal-message success";
-
-
-        createButton.textContent =
-          "Tamamlandı ✓";
-
-
-        // Biraz bekleyip paneli yenile
-
-        setTimeout(async () => {
-          closeModal();
-
-          const teacher = await getCurrentTeacher();
-
-          if (teacher) {
-            await showTeacherDashboard(teacher);
-          }
-        }, 1200);
-
-
-      } catch (error) {
-
-        console.error(
-          "Öğrenci ekleme hatası:",
-          error
-        );
-
-
-        message.textContent =
-          error.message ||
-          "Öğrenci eklenirken bir hata oluştu.";
-
-        message.className =
-          "modal-message error";
-
-
-        createButton.disabled =
-          false;
-
-        createButton.textContent =
-          "Öğrenci Ekle";
-
-      }
-
+      createButton.textContent = "Öğrenci Ekle";
     }
-  );
+  });
 }
 
 // ==========================================
@@ -1049,35 +815,23 @@ function showAddStudentModal() {
 // ==========================================
 
 async function getCurrentTeacher() {
-
   const {
-    data: {
-      user,
-    },
-  } =
-    await supabase.auth.getUser();
-
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-
     showLogin();
 
     return null;
   }
 
-
-  const {
-    data: teacher,
-  } =
-    await supabase
-      .from("teachers")
-      .select("id, name")
-      .eq("id", user.id)
-      .maybeSingle();
-
+  const { data: teacher } = await supabase
+    .from("teachers")
+    .select("id, name")
+    .eq("id", user.id)
+    .maybeSingle();
 
   if (!teacher) {
-
     await supabase.auth.signOut();
 
     showLogin();
@@ -1085,38 +839,51 @@ async function getCurrentTeacher() {
     return null;
   }
 
-
   return teacher;
 }
 
 // ==========================================
-// ÖĞRENCİ PANELİ
+// ŞİFRE OLUŞTURMA
 // ==========================================
+
 async function showSetPassword() {
-  document.querySelector("#app").innerHTML = `
+  app.innerHTML = `
     <div class="auth-page">
+
       <div class="auth-card password-setup-card">
 
         <div class="auth-logo">
-          <div class="logo-icon">📚</div>
+
+          <div class="logo-icon">
+            📚
+          </div>
+
           <div>
             <h1>Ders Takip</h1>
             <p>Hesabını tamamla</p>
           </div>
+
         </div>
 
         <div class="password-setup-content">
-          <div class="password-icon">🔐</div>
 
-          <h2>Şifreni oluştur</h2>
+          <div class="password-icon">
+            🔐
+          </div>
+
+          <h2>
+            Şifreni oluştur
+          </h2>
 
           <p class="password-description">
-            Hesabını kullanmaya başlamak için kendine bir şifre belirle.
+            Hesabını kullanmaya başlamak için
+            kendine bir şifre belirle.
           </p>
 
           <form id="set-password-form">
 
             <div class="form-group">
+
               <label for="new-password">
                 Yeni şifre
               </label>
@@ -1128,9 +895,11 @@ async function showSetPassword() {
                 minlength="8"
                 required
               />
+
             </div>
 
             <div class="form-group">
+
               <label for="confirm-password">
                 Şifre tekrar
               </label>
@@ -1142,6 +911,7 @@ async function showSetPassword() {
                 minlength="8"
                 required
               />
+
             </div>
 
             <div
@@ -1157,78 +927,74 @@ async function showSetPassword() {
             </button>
 
           </form>
+
         </div>
 
       </div>
+
     </div>
   `;
 
   const form = document.querySelector("#set-password-form");
+
   const message = document.querySelector("#password-message");
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const password =
-      document.querySelector("#new-password").value;
+    const password = document.querySelector("#new-password").value;
 
-    const confirmPassword =
-      document.querySelector("#confirm-password").value;
+    const confirmPassword = document.querySelector("#confirm-password").value;
 
     message.textContent = "";
     message.className = "modal-message";
 
     if (password.length < 8) {
-      message.textContent =
-        "Şifren en az 8 karakter olmalı.";
+      message.textContent = "Şifren en az 8 karakter olmalı.";
+
       message.classList.add("error");
+
       return;
     }
 
     if (password !== confirmPassword) {
-      message.textContent =
-        "Şifreler birbiriyle eşleşmiyor.";
+      message.textContent = "Şifreler birbiriyle eşleşmiyor.";
+
       message.classList.add("error");
+
       return;
     }
 
-    const button =
-      form.querySelector("button");
+    const button = form.querySelector("button");
 
     button.disabled = true;
+
     button.textContent = "Şifre oluşturuluyor...";
 
-    const { error } =
-      await supabase.auth.updateUser({
-        password,
-      });
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
 
     if (error) {
       console.error(error);
 
       message.textContent =
-        error.message ||
-        "Şifre oluşturulurken bir hata oluştu.";
+        error.message || "Şifre oluşturulurken bir hata oluştu.";
 
       message.classList.add("error");
 
       button.disabled = false;
+
       button.textContent = "Şifremi Oluştur";
 
       return;
     }
 
-    message.textContent =
-      "Şifren başarıyla oluşturuldu! 🎉";
+    message.textContent = "Şifren başarıyla oluşturuldu! 🎉";
 
     message.classList.add("success");
 
-    // invite parametresini URL'den kaldır
-    window.history.replaceState(
-      {},
-      document.title,
-      window.location.pathname
-    );
+    window.history.replaceState({}, document.title, window.location.pathname);
 
     const {
       data: { user },
@@ -1236,23 +1002,25 @@ async function showSetPassword() {
 
     if (!user) {
       await supabase.auth.signOut();
+
       showLogin();
+
       return;
     }
 
-    const { data: student, error: studentError } =
-      await supabase
-        .from("students")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+    const { data: student, error: studentError } = await supabase
+      .from("students")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
     if (studentError || !student) {
-      message.textContent =
-        "Öğrenci profili bulunamadı.";
+      message.textContent = "Öğrenci profili bulunamadı.";
+
       message.classList.add("error");
 
       button.disabled = false;
+
       button.textContent = "Şifremi Oluştur";
 
       return;
@@ -1263,23 +1031,39 @@ async function showSetPassword() {
     }, 800);
   });
 }
+
+// ==========================================
+// ŞİFRE SIFIRLAMA
+// ==========================================
+
 async function showResetPassword() {
-  document.querySelector("#app").innerHTML = `
+  app.innerHTML = `
     <div class="auth-page">
+
       <div class="auth-card password-setup-card">
 
         <div class="auth-logo">
-          <div class="logo-icon">📚</div>
+
+          <div class="logo-icon">
+            📚
+          </div>
+
           <div>
             <h1>Ders Takip</h1>
             <p>Yeni şifre belirle</p>
           </div>
+
         </div>
 
         <div class="password-setup-content">
-          <div class="password-icon">🔐</div>
 
-          <h2>Yeni şifreni belirle</h2>
+          <div class="password-icon">
+            🔐
+          </div>
+
+          <h2>
+            Yeni şifreni belirle
+          </h2>
 
           <p class="password-description">
             Hesabın için yeni bir şifre oluştur.
@@ -1288,6 +1072,7 @@ async function showResetPassword() {
           <form id="reset-password-form">
 
             <div class="form-group">
+
               <label for="reset-new-password">
                 Yeni şifre
               </label>
@@ -1299,9 +1084,11 @@ async function showResetPassword() {
                 minlength="8"
                 required
               />
+
             </div>
 
             <div class="form-group">
+
               <label for="reset-confirm-password">
                 Şifre tekrar
               </label>
@@ -1313,6 +1100,7 @@ async function showResetPassword() {
                 minlength="8"
                 required
               />
+
             </div>
 
             <div
@@ -1328,102 +1116,102 @@ async function showResetPassword() {
             </button>
 
           </form>
+
         </div>
 
       </div>
+
     </div>
   `;
 
-  const form =
-    document.querySelector("#reset-password-form");
+  const form = document.querySelector("#reset-password-form");
 
-  const message =
-    document.querySelector("#reset-password-message");
+  const message = document.querySelector("#reset-password-message");
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const password =
-      document.querySelector("#reset-new-password").value;
+    const password = document.querySelector("#reset-new-password").value;
 
-    const confirmPassword =
-      document.querySelector("#reset-confirm-password").value;
+    const confirmPassword = document.querySelector(
+      "#reset-confirm-password",
+    ).value;
 
     message.textContent = "";
+
     message.className = "modal-message";
 
     if (password.length < 8) {
-      message.textContent =
-        "Şifren en az 8 karakter olmalı.";
+      message.textContent = "Şifren en az 8 karakter olmalı.";
 
       message.classList.add("error");
+
       return;
     }
 
     if (password !== confirmPassword) {
-      message.textContent =
-        "Şifreler birbiriyle eşleşmiyor.";
+      message.textContent = "Şifreler birbiriyle eşleşmiyor.";
 
       message.classList.add("error");
+
       return;
     }
 
-    const button =
-      form.querySelector("button");
+    const button = form.querySelector("button");
 
     button.disabled = true;
-    button.textContent =
-      "Şifre güncelleniyor...";
 
-    const { error } =
-      await supabase.auth.updateUser({
-        password,
-      });
+    button.textContent = "Şifre güncelleniyor...";
+
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
 
     if (error) {
       console.error(error);
 
       message.textContent =
-        error.message ||
-        "Şifre güncellenirken bir hata oluştu.";
+        error.message || "Şifre güncellenirken bir hata oluştu.";
 
       message.classList.add("error");
 
       button.disabled = false;
-      button.textContent =
-        "Şifremi Güncelle";
+
+      button.textContent = "Şifremi Güncelle";
 
       return;
     }
 
-    message.textContent =
-      "Şifren başarıyla güncellendi! 🎉";
+    message.textContent = "Şifren başarıyla güncellendi! 🎉";
 
     message.classList.add("success");
 
     setTimeout(async () => {
       await supabase.auth.signOut();
 
-      window.history.replaceState(
-        {},
-        document.title,
-        window.location.pathname
-      );
+      window.history.replaceState({}, document.title, window.location.pathname);
 
       showLogin();
     }, 1200);
   });
 }
 
+// ==========================================
+// ÖĞRENCİ İSTATİSTİKLERİ
+// ==========================================
+
 async function getStudentStats(studentId) {
   const { data, error } = await supabase
     .from("study_records")
     .select("study_date, correct, wrong, blank, total, success_rate")
     .eq("student_id", studentId)
-    .order("study_date", { ascending: false });
+    .order("study_date", {
+      ascending: false,
+    });
 
   if (error) {
     console.error("İstatistikler alınamadı:", error);
+
     return {
       streak: 0,
       weeklyQuestions: 0,
@@ -1433,9 +1221,9 @@ async function getStudentStats(studentId) {
 
   const records = data || [];
 
-  // -----------------------------
-  // BU HAFTAKİ SORU SAYISI
-  // -----------------------------
+  // ========================================
+  // BU HAFTAKİ SORU
+  // ========================================
 
   const today = new Date();
 
@@ -1446,56 +1234,41 @@ async function getStudentStats(studentId) {
   const weekStart = new Date(today);
 
   weekStart.setDate(today.getDate() - diff);
+
   weekStart.setHours(0, 0, 0, 0);
 
   const weeklyQuestions = records
     .filter((record) => {
-      const recordDate = new Date(
-        record.study_date + "T00:00:00"
-      );
+      const recordDate = new Date(record.study_date + "T00:00:00");
 
       return recordDate >= weekStart;
     })
-    .reduce(
-      (sum, record) =>
-        sum + Number(record.total || 0),
-      0
-    );
+    .reduce((sum, record) => sum + Number(record.total || 0), 0);
 
-  // -----------------------------
+  // ========================================
   // GENEL BAŞARI
-  // -----------------------------
+  // ========================================
 
   const totalQuestions = records.reduce(
-    (sum, record) =>
-      sum + Number(record.total || 0),
-    0
+    (sum, record) => sum + Number(record.total || 0),
+    0,
   );
 
   const totalCorrect = records.reduce(
-    (sum, record) =>
-      sum + Number(record.correct || 0),
-    0
+    (sum, record) => sum + Number(record.correct || 0),
+    0,
   );
 
   const successRate =
     totalQuestions === 0
       ? 0
-      : Math.round(
-          (totalCorrect / totalQuestions) * 100
-        );
+      : Math.round((totalCorrect / totalQuestions) * 100);
 
-  // -----------------------------
+  // ========================================
   // SERİ
-  // -----------------------------
+  // ========================================
 
-  const studyDates = [
-    ...new Set(
-      records.map(
-        (record) => record.study_date
-      )
-    ),
-  ];
+  const studyDates = [...new Set(records.map((record) => record.study_date))];
 
   let streak = 0;
 
@@ -1504,8 +1277,7 @@ async function getStudentStats(studentId) {
   checkDate.setHours(0, 0, 0, 0);
 
   while (true) {
-    const dateString =
-      checkDate.toISOString().split("T")[0];
+    const dateString = checkDate.toISOString().split("T")[0];
 
     if (!studyDates.includes(dateString)) {
       break;
@@ -1513,9 +1285,7 @@ async function getStudentStats(studentId) {
 
     streak++;
 
-    checkDate.setDate(
-      checkDate.getDate() - 1
-    );
+    checkDate.setDate(checkDate.getDate() - 1);
   }
 
   return {
@@ -1524,14 +1294,19 @@ async function getStudentStats(studentId) {
     successRate,
   };
 }
+
+// ==========================================
+// ÖĞRENCİ PANELİ
+// ==========================================
+
 async function showStudentDashboard(student) {
   app.innerHTML = `
     <div class="student-app">
 
-      <!-- ÜST ALAN -->
       <header class="student-header">
 
         <div>
+
           <span class="student-greeting">
             MERHABA 👋
           </span>
@@ -1543,36 +1318,35 @@ async function showStudentDashboard(student) {
           <p>
             ${student.grade}. Sınıf
           </p>
+
         </div>
 
-      <div class="student-header-actions">
+        <div class="student-header-actions">
 
-        <button
-          id="student-theme-toggle"
-          class="theme-toggle"
-          aria-label="Tema değiştir"
-        >
-          🌙
-        </button>
+          <button
+            id="student-theme-toggle"
+            class="theme-toggle"
+            aria-label="Tema değiştir"
+          >
+            🌙
+          </button>
 
-        <button
-          id="student-top-logout"
-          class="student-top-logout"
-        >
-          Çıkış Yap
-        </button>
+          <button
+            id="student-top-logout"
+            class="student-top-logout"
+          >
+            Çıkış Yap
+          </button>
 
-      </div>
+        </div>
 
       </header>
 
-      <!-- ANA İÇERİK -->
       <main
         id="student-content"
         class="student-content"
       ></main>
 
-      <!-- ALT MENÜ -->
       <nav class="student-bottom-nav">
 
         <button
@@ -1620,40 +1394,61 @@ async function showStudentDashboard(student) {
     </div>
   `;
 
+  // ========================================
+  // ELEMENTLER
+  // ========================================
+
+  const content = document.querySelector("#student-content");
+
+  const navItems = document.querySelectorAll(".nav-item");
+
+  // ========================================
+  // TEMA
+  // ========================================
+
   document
     .querySelector("#student-theme-toggle")
-    .addEventListener("click", toggleTheme);
-  document
-  .querySelector("#student-top-logout")
-  .addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    showLogin();
-  });
+    ?.addEventListener("click", toggleTheme);
+
   updateThemeButton();
 
-  const content =
-    document.querySelector("#student-content");
+  // ========================================
+  // ÇIKIŞ
+  // ========================================
 
-  const navItems =
-    document.querySelectorAll(".nav-item");
+  document
+    .querySelector("#student-top-logout")
+    ?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+
+      showLogin();
+    });
+
+  // ========================================
+  // AKTİF MENÜ
+  // ========================================
 
   function setActiveNav(page) {
     navItems.forEach((item) => {
-      item.classList.toggle(
-        "active",
-        item.dataset.page === page
-      );
+      item.classList.toggle("active", item.dataset.page === page);
     });
   }
 
+  // ========================================
+  // ANA SAYFA
+  // ========================================
+
   async function showHome() {
     const stats = await getStudentStats(student.id);
+
     content.innerHTML = `
+
       <section class="student-home">
 
         <div class="hero-card">
 
           <div>
+
             <span class="hero-label">
               BUGÜN
             </span>
@@ -1666,6 +1461,7 @@ async function showStudentDashboard(student) {
               Bugünkü çalışmalarını kaydet,
               gelişimini birlikte takip edelim.
             </p>
+
           </div>
 
           <div class="hero-emoji">
@@ -1677,21 +1473,51 @@ async function showStudentDashboard(student) {
         <section class="student-stats">
 
           <div class="student-stat-card">
-            <span class="stat-icon">🔥</span>
-            <small>Serim</small>
-            <strong>${stats.streak} gün</strong>
+
+            <span class="stat-icon">
+              🔥
+            </span>
+
+            <small>
+              Serim
+            </small>
+
+            <strong>
+              ${stats.streak} gün
+            </strong>
+
           </div>
 
           <div class="student-stat-card">
-            <span class="stat-icon">📝</span>
-            <small>Bu Hafta</small>
-            <strong>${stats.weeklyQuestions} soru</strong>
+
+            <span class="stat-icon">
+              📝
+            </span>
+
+            <small>
+              Bu Hafta
+            </small>
+
+            <strong>
+              ${stats.weeklyQuestions} soru
+            </strong>
+
           </div>
 
           <div class="student-stat-card">
-            <span class="stat-icon">🎯</span>
-            <small>Başarı</small>
-            <strong>%${stats.successRate}</strong>
+
+            <span class="stat-icon">
+              🎯
+            </span>
+
+            <small>
+              Başarı
+            </small>
+
+            <strong>
+              %${stats.successRate}
+            </strong>
+
           </div>
 
         </section>
@@ -1699,7 +1525,9 @@ async function showStudentDashboard(student) {
         <section class="student-section">
 
           <div class="student-section-header">
+
             <div>
+
               <span class="section-label">
                 GENEL DURUM
               </span>
@@ -1707,7 +1535,9 @@ async function showStudentDashboard(student) {
               <h2>
                 Konu Durumların
               </h2>
+
             </div>
+
           </div>
 
           <div class="topic-empty">
@@ -1717,19 +1547,19 @@ async function showStudentDashboard(student) {
             </div>
 
             <h3>
-              Henüz çalışma kaydın yok
+              Çalışma kayıtlarını burada göreceksin
             </h3>
 
             <p>
-              İlk çalışmanı eklediğinde
-              konu gelişimini burada görebileceksin.
+              Çalışmalarını ekledikçe
+              konu gelişimin burada görünecek.
             </p>
 
             <button
               class="primary-button"
               id="home-add-study"
             >
-              ＋ İlk Çalışmamı Ekle
+              ＋ Çalışma Ekle
             </button>
 
           </div>
@@ -1739,7 +1569,9 @@ async function showStudentDashboard(student) {
         <section class="student-section">
 
           <div class="student-section-header">
+
             <div>
+
               <span class="section-label">
                 SON ÇALIŞMALAR
               </span>
@@ -1747,7 +1579,9 @@ async function showStudentDashboard(student) {
               <h2>
                 Son Çalışmaların
               </h2>
+
             </div>
+
           </div>
 
           <div class="recent-empty">
@@ -1761,93 +1595,128 @@ async function showStudentDashboard(student) {
 
     document
       .querySelector("#home-add-study")
-      ?.addEventListener(
-        "click",
-        () => showPage("add")
-      );
-
+      ?.addEventListener("click", () => showPage("add"));
   }
 
-  function showPage(page) {
+  // ========================================
+  // SAYFA DEĞİŞTİR
+  // ========================================
+
+  async function showPage(page) {
     setActiveNav(page);
 
     if (page === "home") {
-      showHome();
+      await showHome();
+
       return;
     }
 
     if (page === "add") {
-      content.innerHTML = `
-        <section class="placeholder-page">
-          <div class="placeholder-icon">➕</div>
-          <span class="section-label">
-            ÇALIŞMA
-          </span>
-          <h2>Çalışma Ekle</h2>
-          <p>
-            Bir sonraki aşamada burada
-            çalışma kayıtlarını oluşturacağız.
-          </p>
-        </section>
-      `;
+      await showAddStudyPage(content, student);
+
       return;
     }
 
     if (page === "analysis") {
       content.innerHTML = `
+
         <section class="placeholder-page">
-          <div class="placeholder-icon">📊</div>
+
+          <div class="placeholder-icon">
+            📊
+          </div>
+
           <span class="section-label">
             GELİŞİM
           </span>
-          <h2>Analiz</h2>
+
+          <h2>
+            Analiz
+          </h2>
+
           <p>
             Başarı oranların, konu gelişimin
             ve haftalık istatistiklerin burada olacak.
           </p>
+
         </section>
       `;
+
       return;
     }
 
     if (page === "diary") {
       content.innerHTML = `
+
         <section class="placeholder-page">
-          <div class="placeholder-icon">📖</div>
+
+          <div class="placeholder-icon">
+            📖
+          </div>
+
           <span class="section-label">
             GÜNLÜK
           </span>
-          <h2>Günlüğüm</h2>
+
+          <h2>
+            Günlüğüm
+          </h2>
+
           <p>
             Günlük çalışma notlarını
             burada tutabileceksin.
           </p>
+
         </section>
       `;
+
       return;
     }
 
     if (page === "profile") {
       content.innerHTML = `
+
         <section class="placeholder-page">
-          <div class="placeholder-icon">👤</div>
+
+          <div class="placeholder-icon">
+            👤
+          </div>
+
           <span class="section-label">
             HESABIM
           </span>
-          <h2>Profil</h2>
+
+          <h2>
+            Profil
+          </h2>
+
           <p>
             Profilin ve başarı rozetlerin
             burada olacak.
           </p>
 
           <div class="profile-preview">
-            <strong>${student.name}</strong>
-            <span>${student.grade}. Sınıf</span>
+
+            <strong>
+              ${student.name}
+            </strong>
+
+            <span>
+              ${student.grade}. Sınıf
+            </span>
+
           </div>
+
         </section>
       `;
+
+      return;
     }
   }
+
+  // ========================================
+  // ALT MENÜ
+  // ========================================
 
   navItems.forEach((item) => {
     item.addEventListener("click", () => {
@@ -1855,7 +1724,785 @@ async function showStudentDashboard(student) {
     });
   });
 
-  showHome();
+  // ========================================
+  // BAŞLANGIÇ
+  // ========================================
+
+  await showHome();
+}
+
+// ==========================================
+// ÇALIŞMA EKLE SAYFASI
+// ==========================================
+
+async function showAddStudyPage(content, student) {
+  content.innerHTML = `
+
+    <section class="student-section">
+
+      <div class="student-section-header">
+
+        <div>
+
+          <span class="section-label">
+            ÇALIŞMA
+          </span>
+
+          <h2>
+            Çalışma Ekle
+          </h2>
+
+          <p>
+            Bugün yaptığın çalışmayı kaydet.
+          </p>
+
+        </div>
+
+      </div>
+
+      <form
+        id="study-form"
+        class="study-form"
+      >
+
+        <!-- DERS -->
+
+        <div class="form-group">
+
+          <label for="study-subject">
+            Ders
+          </label>
+
+          <select
+            id="study-subject"
+            required
+          >
+
+            <option value="">
+              Ders seç
+            </option>
+
+          </select>
+
+        </div>
+
+        <!-- KONU -->
+
+        <div class="form-group">
+
+          <label for="study-topic">
+            Konu
+          </label>
+
+          <select
+            id="study-topic"
+            disabled
+          >
+
+            <option value="">
+              Önce ders seç
+            </option>
+
+          </select>
+
+        </div>
+
+        <!-- ALT KONU -->
+
+        <div class="form-group">
+
+          <label for="study-subtopic">
+            Alt konu
+          </label>
+
+          <select
+            id="study-subtopic"
+            disabled
+          >
+
+            <option value="">
+              Önce konu seç
+            </option>
+
+          </select>
+
+        </div>
+
+        <!-- ÇALIŞMA TÜRÜ -->
+
+        <div class="form-group">
+
+          <label for="study-type">
+            Çalışma türü
+          </label>
+
+          <select
+            id="study-type"
+            required
+          >
+
+            <option value="question">
+              Soru Çözümü
+            </option>
+
+            <option value="review">
+              Konu Tekrarı
+            </option>
+
+          </select>
+
+        </div>
+
+<!-- SORU ALANLARI -->
+
+<div id="question-fields">
+
+  <div class="study-number-grid">
+
+    <div class="form-group">
+
+      <label for="study-correct">
+        Doğru
+      </label>
+
+      <input
+        type="number"
+        id="study-correct"
+        min="0"
+        value="0"
+        placeholder="0"
+      />
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="study-wrong">
+        Yanlış
+      </label>
+
+      <input
+        type="number"
+        id="study-wrong"
+        min="0"
+        value="0"
+        placeholder="0"
+      />
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="study-blank">
+        Boş
+      </label>
+
+      <input
+        type="number"
+        id="study-blank"
+        min="0"
+        value="0"
+        placeholder="0"
+      />
+
+    </div>
+
+  </div>
+
+  <!-- OTOMATİK TOPLAM -->
+
+  <div class="study-total-box">
+
+    <span>Toplam Soru</span>
+
+    <strong id="study-total-display">
+      0
+    </strong>
+
+  </div>
+
+</div>
+
+        <!-- SÜRE -->
+
+        <div class="form-group">
+
+          <label for="study-duration">
+            Çalışma Süresi
+            <span>(isteğe bağlı)</span>
+          </label>
+
+          <input
+            type="number"
+            id="study-duration"
+            min="1"
+            placeholder="Dakika"
+          />
+
+        </div>
+
+        <!-- NOT -->
+
+        <div class="form-group">
+
+          <label for="study-note">
+            Not
+            <span>(isteğe bağlı)</span>
+          </label>
+
+          <textarea
+            id="study-note"
+            rows="4"
+            placeholder="Örn. Konu tekrarı yaptım, zorlandığım soruları tekrar çözdüm..."
+          ></textarea>
+
+        </div>
+
+        <div
+          id="study-form-message"
+          class="modal-message"
+        ></div>
+
+        <button
+          type="submit"
+          id="save-study-button"
+          class="primary-button"
+        >
+          Çalışmayı Kaydet
+        </button>
+
+      </form>
+
+    </section>
+  `;
+
+  // ========================================
+  // ELEMENTLER
+  // ========================================
+
+  const typeSelect = document.querySelector("#study-type");
+
+  const questionFields = document.querySelector("#question-fields");
+
+  const subjectSelect = document.querySelector("#study-subject");
+
+  const topicSelect = document.querySelector("#study-topic");
+
+  const subtopicSelect = document.querySelector("#study-subtopic");
+
+  const form = document.querySelector("#study-form");
+
+  const message = document.querySelector("#study-form-message");
+
+  const saveButton = document.querySelector("#save-study-button");
+  // ========================================
+  // OTOMATİK TOPLAM SORU HESABI
+  // ========================================
+// ========================================
+// OTOMATİK TOPLAM SORU HESABI
+// ========================================
+
+const correctInput =
+  document.querySelector("#study-correct");
+
+const wrongInput =
+  document.querySelector("#study-wrong");
+
+const blankInput =
+  document.querySelector("#study-blank");
+
+const totalDisplay =
+  document.querySelector("#study-total-display");
+
+function updateStudyTotal() {
+
+  const correct =
+    Number(correctInput.value) || 0;
+
+  const wrong =
+    Number(wrongInput.value) || 0;
+
+  const blank =
+    Number(blankInput.value) || 0;
+
+  const total =
+    correct + wrong + blank;
+
+  totalDisplay.textContent = total;
+}
+
+// ========================================
+// 0'A BASIP YAZINCA 0'I OTOMATİK SİL
+// ========================================
+
+function handleNumberInputFocus(event) {
+
+  if (event.target.value === "0") {
+    event.target.value = "";
+  }
+}
+
+correctInput.addEventListener(
+  "focus",
+  handleNumberInputFocus
+);
+
+wrongInput.addEventListener(
+  "focus",
+  handleNumberInputFocus
+);
+
+blankInput.addEventListener(
+  "focus",
+  handleNumberInputFocus
+);
+
+// ========================================
+// YAZDIKÇA TOPLAMI GÜNCELLE
+// ========================================
+
+correctInput.addEventListener(
+  "input",
+  updateStudyTotal
+);
+
+wrongInput.addEventListener(
+  "input",
+  updateStudyTotal
+);
+
+blankInput.addEventListener(
+  "input",
+  updateStudyTotal
+);
+
+updateStudyTotal();
+
+
+[
+  correctInput,
+  wrongInput,
+  blankInput,
+  document.querySelector("#study-duration"),
+].forEach((input) => {
+  input.addEventListener("wheel", (event) => {
+    event.preventDefault();
+  });
+});
+  // ========================================
+  // SORU ALANLARINI GÖSTER / GİZLE
+  // ========================================
+
+  function updateQuestionFields() {
+    const type = typeSelect.value;
+
+    if (type === "review") {
+      questionFields.style.display = "none";
+    } else {
+      questionFields.style.display = "block";
+    }
+  }
+
+  typeSelect.addEventListener("change", updateQuestionFields);
+
+  updateQuestionFields();
+
+  // ========================================
+  // DERSLERİ GETİR
+  // ========================================
+
+  const { data: subjects, error: subjectError } = await supabase
+    .from("subjects")
+    .select("*")
+    .eq("grade", student.grade)
+    .order("name");
+
+  if (subjectError) {
+    console.error("Dersler yüklenemedi:", subjectError);
+
+    subjectSelect.innerHTML = `
+      <option value="">
+        Dersler yüklenemedi
+      </option>
+    `;
+
+    message.textContent = "Dersler yüklenemedi.";
+
+    message.className = "modal-message error";
+
+    return;
+  }
+
+  (subjects || []).forEach((subject) => {
+    const option = document.createElement("option");
+
+    option.value = subject.id;
+
+    option.textContent = subject.name;
+
+    subjectSelect.appendChild(option);
+  });
+
+  // ========================================
+  // DERS DEĞİŞİNCE KONULAR
+  // ========================================
+
+  subjectSelect.addEventListener("change", async () => {
+    const subjectId = subjectSelect.value;
+
+    topicSelect.innerHTML = `
+        <option value="">
+          Konu seç
+        </option>
+      `;
+
+    subtopicSelect.innerHTML = `
+        <option value="">
+          Önce konu seç
+        </option>
+      `;
+
+    topicSelect.disabled = true;
+
+    subtopicSelect.disabled = true;
+
+    if (!subjectId) {
+      return;
+    }
+
+    const { data: topics, error } = await supabase
+      .from("topics")
+      .select("*")
+      .eq("subject_id", subjectId)
+      .order("name");
+
+    if (error) {
+      console.error("Konular yüklenemedi:", error);
+
+      return;
+    }
+
+    topicSelect.disabled = false;
+
+    (topics || []).forEach((topic) => {
+      const option = document.createElement("option");
+
+      option.value = topic.id;
+
+      option.textContent = topic.name;
+
+      topicSelect.appendChild(option);
+    });
+  });
+
+  // ========================================
+  // KONU DEĞİŞİNCE ALT KONULAR
+  // ========================================
+
+  topicSelect.addEventListener("change", async () => {
+    const topicId = topicSelect.value;
+
+    subtopicSelect.innerHTML = `
+    <option value="">Alt konu seçin</option>
+  `;
+
+    subtopicSelect.disabled = true;
+
+    if (!topicId) {
+      return;
+    }
+
+    const { data: subtopics, error } = await supabase
+      .from("subtopics")
+      .select("*")
+      .eq("topic_id", topicId)
+      .order("name");
+
+    if (error) {
+      console.error("Alt konular yüklenemedi:", error);
+      return;
+    }
+    console.log("Seçilen topic ID:", topicId);
+    console.log("Öğrenci sınıfı:", student.grade);
+    if (!subtopics || subtopics.length === 0) {
+      subtopicSelect.innerHTML = `
+      <option value="">Bu konuda alt konu bulunmuyor</option>
+    `;
+      subtopicSelect.disabled = true;
+      return;
+    }
+
+    subtopicSelect.innerHTML = `
+    <option value="">Alt konu seçin</option>
+    ${subtopics
+      .map(
+        (subtopic) => `
+      <option value="${subtopic.id}">
+        ${subtopic.name}
+      </option>
+    `,
+      )
+      .join("")}
+  `;
+
+    subtopicSelect.disabled = false;
+  });
+
+  // ========================================
+  // ÇALIŞMA KAYDET
+  // ========================================
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const type = typeSelect.value;
+
+    const correct = Number(document.querySelector("#study-correct").value || 0);
+
+    const wrong = Number(document.querySelector("#study-wrong").value || 0);
+
+    const blank = Number(document.querySelector("#study-blank").value || 0);
+
+    const total = correct + wrong + blank;
+    const duration = Number(
+      document.querySelector("#study-duration").value || 0,
+    );
+
+    const note = document.querySelector("#study-note").value.trim();
+
+    // ====================================
+    // KONTROLLER
+    // ====================================
+
+    if (type !== "review" && total <= 0) {
+      message.textContent = "Lütfen doğru, yanlış veya boş soru sayısını gir.";
+
+      message.className = "modal-message error";
+
+      return;
+    }
+
+    if (correct < 0 || wrong < 0 || blank < 0) {
+      message.textContent = "Soru sayıları negatif olamaz.";
+
+      message.className = "modal-message error";
+
+      return;
+    }
+
+    saveButton.disabled = true;
+
+    saveButton.textContent = "Kaydediliyor...";
+
+    message.textContent = "Çalışman kaydediliyor...";
+
+    message.className = "modal-message info";
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("Oturum bulunamadı.");
+      }
+
+      // ==================================
+      // BAŞARI ORANI
+      // ==================================
+
+      const actualTotal = type === "review" ? 0 : total;
+
+      const actualCorrect = type === "review" ? 0 : correct;
+
+      const actualWrong = type === "review" ? 0 : wrong;
+
+      const actualBlank = type === "review" ? 0 : blank;
+
+      const successRate =
+        actualTotal > 0 ? Math.round((actualCorrect / actualTotal) * 100) : 0;
+
+      // ==================================
+      // KAYIT
+      // ==================================
+
+      const { error } = await supabase.from("study_records").insert({
+        student_id: user.id,
+
+        subject_id: subjectSelect.value || null,
+
+        topic_id: topicSelect.value || null,
+
+        subtopic_id: subtopicSelect.value || null,
+
+        study_type: type,
+
+        correct: actualCorrect,
+
+        wrong: actualWrong,
+
+        blank: actualBlank,
+
+        study_date: new Date().toISOString().split("T")[0],
+
+        duration_minutes: duration || null,
+
+        note: note || null,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // ==================================
+      // BAŞARILI
+      // ==================================
+
+      message.textContent = "Çalışman başarıyla kaydedildi! 🎉";
+
+      message.className = "modal-message success";
+
+      saveButton.textContent = "Kaydedildi ✓";
+
+      setTimeout(async () => {
+        await showPageFromStudent("home", content, student);
+      }, 900);
+    } catch (error) {
+      console.error("Çalışma kaydetme hatası:", error);
+
+      message.textContent = error.message || "Çalışma kaydedilemedi.";
+
+      message.className = "modal-message error";
+
+      saveButton.disabled = false;
+
+      saveButton.textContent = "Çalışmayı Kaydet";
+    }
+  });
+}
+
+// ==========================================
+// ÇALIŞMA KAYDI SONRASI ANA SAYFAYA DÖN
+// ==========================================
+
+async function showPageFromStudent(page, content, student) {
+  if (page === "home") {
+    const stats = await getStudentStats(student.id);
+
+    content.innerHTML = `
+
+      <section class="student-home">
+
+        <div class="hero-card">
+
+          <div>
+
+            <span class="hero-label">
+              BUGÜN
+            </span>
+
+            <h2>
+              Çalışmaya devam! 🚀
+            </h2>
+
+            <p>
+              Çalışman başarıyla kaydedildi.
+            </p>
+
+          </div>
+
+          <div class="hero-emoji">
+            📚
+          </div>
+
+        </div>
+
+        <section class="student-stats">
+
+          <div class="student-stat-card">
+
+            <span class="stat-icon">
+              🔥
+            </span>
+
+            <small>
+              Serim
+            </small>
+
+            <strong>
+              ${stats.streak} gün
+            </strong>
+
+          </div>
+
+          <div class="student-stat-card">
+
+            <span class="stat-icon">
+              📝
+            </span>
+
+            <small>
+              Bu Hafta
+            </small>
+
+            <strong>
+              ${stats.weeklyQuestions} soru
+            </strong>
+
+          </div>
+
+          <div class="student-stat-card">
+
+            <span class="stat-icon">
+              🎯
+            </span>
+
+            <small>
+              Başarı
+            </small>
+
+            <strong>
+              %${stats.successRate}
+            </strong>
+
+          </div>
+
+        </section>
+
+        <section class="student-section">
+
+          <div class="student-section-header">
+
+            <div>
+
+              <span class="section-label">
+                ÇALIŞMA
+              </span>
+
+              <h2>
+                Yeni bir çalışma ekle
+              </h2>
+
+            </div>
+
+          </div>
+
+          <button
+            class="primary-button"
+            id="new-study-after-save"
+          >
+            ＋ Çalışma Ekle
+          </button>
+
+        </section>
+
+      </section>
+    `;
+
+    document
+      .querySelector("#new-study-after-save")
+      ?.addEventListener("click", () => showAddStudyPage(content, student));
+  }
 }
 
 // ==========================================
@@ -1865,33 +2512,30 @@ async function showStudentDashboard(student) {
 async function init() {
   initTheme();
 
-  const urlParams =
-    new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(window.location.search);
 
-  const isInvite =
-    urlParams.get("invite") === "1";
+  const isInvite = urlParams.get("invite") === "1";
 
-  const isReset =
-    urlParams.get("reset") === "1";
+  const isReset = urlParams.get("reset") === "1";
 
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (isReset && session?.user) {
-    showResetPassword();
+    await showResetPassword();
+
     return;
   }
 
   if (session?.user) {
-
     if (isInvite) {
-      showSetPassword();
+      await showSetPassword();
+
       return;
     }
 
     await checkUser(session.user.id);
-
   } else {
     showLogin();
   }
